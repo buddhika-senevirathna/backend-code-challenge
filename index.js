@@ -20,12 +20,8 @@ app.get("/", (req, res) => {
   res.status(200).json(message);
 });
 
-// Creating server.
-app.listen(port, host, () =>{
-  console.log(`app listening at ${protocol}://${host}:${port}`)
-});
 
-/*(async () => {
+(async () => {
   // get a city by tag ("excepteurus")
   let result = await fetch(`${server}/cities-by-tag?tag=excepteurus&isActive=true`);
 
@@ -136,4 +132,9 @@ app.listen(port, host, () =>{
   console.log('You made it! Now make your code available on git and send us a link');
 })().catch(err => {
   console.log(err);
-});*/
+});
+
+// Creating server.
+app.listen(port, host, () =>{
+  console.log(`app listening at ${protocol}://${host}:${port}`)
+});
