@@ -1,13 +1,31 @@
+const express = require("express");
+const app = express();
+
 const assert = require('assert');
 const fs = require('fs-extra');
 const fetch = require('node-fetch');
+
+app.use(express.json());
 
 const protocol = 'http';
 const host = '127.0.0.1';
 const port = '8080';
 const server = `${protocol}://${host}:${port}`;
 
-(async () => {
+/**
+ * Health check of server.
+ */
+app.get("/", (req, res) => {
+  let message = "Sever running successfully";
+  res.status(200).json(message);
+});
+
+// Creating server.
+app.listen(port, host, () =>{
+  console.log(`app listening at ${protocol}://${host}:${port}`)
+});
+
+/*(async () => {
   // get a city by tag ("excepteurus")
   let result = await fetch(`${server}/cities-by-tag?tag=excepteurus&isActive=true`);
 
@@ -118,4 +136,4 @@ const server = `${protocol}://${host}:${port}`;
   console.log('You made it! Now make your code available on git and send us a link');
 })().catch(err => {
   console.log(err);
-});
+});*/
