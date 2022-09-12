@@ -1,5 +1,8 @@
 const cities = require('../addresses.json');
+const fs = require("fs");
+
 const cityController = {};
+
 cityController.getActiveCitiesByTag = async(data, callback) => {
     try {
         const tag = data.params.tag;
@@ -85,15 +88,28 @@ cityController.getCitiesWithInRadius = async(data, callback) => {
     } catch (error) {
         console.log(error.message);
     }
-};
+}
 
-cityController.getAllCities = async(data, callback) => {
+cityController.getAllCities = async(req, callback) => {
     try {
-        callback(200, {data: 'Hello'}); 
+        let file = [];
+        var readStream = fs.createReadStream('./addresses.json', 'utf8');
+        readStream
+        .on('data', (chunk) => {
+            file.push(chunk);
+        })
+        .on('error', (err_msg) => {
+            console.log(err_msg);
+            res.end(err_msg);
+        })
+        .on('end', () => {
+            callback(200, file)
+        })
     } catch (error) {
         console.log(error.message);
     }
-};
+}
+
 
 cityController.notFound = (data, callback) => {
     callback(404, {data: 'Requested path not found'})
