@@ -97,7 +97,7 @@ HTTPServer.listen(port, host, () => {
   // now it get's a bit more tricky. We want to find all cities within 250 km of the
   // the one we found earlier. That might take a while, so rather than waiting for the
   // result we expect to get a url that can be polled for the final result
-  
+
   result = await fetch(`${server}/area?from=${city.guid}&distance=250`, {
     headers: { 'Authorization': 'bearer dGhlc2VjcmV0dG9rZW4=' },
     timeout: 25

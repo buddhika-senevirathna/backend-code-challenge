@@ -1,6 +1,5 @@
 const cityController = require('../contoller/CityController'); 
 
-//cityRouter.get('/cities-by-tag?:tag?:isActive', getActiveCitiesByTag);
 const cityRouter = {
     '/cities-by-tag' : {
         'GET': cityController.getActiveCitiesByTag,
@@ -9,7 +8,10 @@ const cityRouter = {
         'GET': cityController.getDistance,
     },
     '/area' : {
-        'GET': cityController.getCitiesWithInRadius,
+        'GET': cityController.getArea,
+    },
+    '/area-result/2152f96f-50c7-4d76-9e18-f7033bd14428' :  {
+        'GET': cityController.citiesInsideArea,
     },
     '/all-cities' : {
         'GET': cityController.getAllCities,
