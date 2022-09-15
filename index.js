@@ -1,11 +1,62 @@
+const http = require('http');
+const url = require('url');
+
 const assert = require('assert');
 const fs = require('fs-extra');
 const fetch = require('node-fetch');
 
+const cityRouter = require('./routes/CityRoutes');
+
 const protocol = 'http';
-const host = '127.0.0.1';
+const host = 'localhost';
 const port = '8080';
 const server = `${protocol}://${host}:${port}`;
+
+const HTTPServer = http.createServer((req,res) => { 
+  const reqURL = url.parse(req.url, true)
+  const pathName = reqURL.pathname
+  const params = reqURL.query
+  const reqMethod = req.method
+  const reqHeaders = req.headers
+  const auth = req.headers.authorization
+  if(!auth) {
+    res.statusCode = 401;
+    res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
+    res.end('Unautherized');
+  }else {
+    const token = auth.split(" ")[1];
+    if(token === "dGhlc2VjcmV0dG9rZW4=") {
+
+      const data = {
+        'server': server,
+        'pathName': pathName,
+        'method': reqMethod,
+        'params': params,
+        'headers': reqHeaders,
+        'payload': {}
+      }
+
+        const route = typeof(cityRouter[pathName]) !== "undefined" && typeof(cityRouter[pathName][reqMethod]) !== "undefined" ? cityRouter[pathName][reqMethod] : cityRouter['notFound']
+        route(data, (HTTPCode, payload) => {
+        payload = typeof(payload) === 'object' ? payload : {}
+        HTTPCode = typeof(HTTPCode) === 'number' ? HTTPCode : 200
+        const payloadString = JSON.stringify(payload)
+        res.setHeader('content-type', 'application/json')
+        res.writeHead(HTTPCode)
+        res.end(payloadString)
+      })
+    }else{
+      res.statusCode = 401;
+      res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
+      res.end('Unautherized');
+    }
+  }
+})
+
+HTTPServer.listen(port, host, () => {
+  console.log(`http server listening on port ${port}`)
+});
+
 
 (async () => {
   // get a city by tag ("excepteurus")
@@ -16,11 +67,10 @@ const server = `${protocol}://${host}:${port}`;
   result = await fetch(`${server}/cities-by-tag?tag=excepteurus&isActive=true`, {
     headers: { 'Authorization': 'bearer dGhlc2VjcmV0dG9rZW4=' }
   });
-
+  
   // ah, that's better
   assert.strictEqual(result.status, 200);
   let body = await result.json();
-
   // we expect only one city to match
   assert.strictEqual(body.cities.length, 1);
 
@@ -34,7 +84,6 @@ const server = `${protocol}://${host}:${port}`;
   result = await fetch(`${server}/distance?from=${city.guid}&to=17f4ceee-8270-4119-87c0-9c1ef946695e`, {
     headers: { 'Authorization': 'bearer dGhlc2VjcmV0dG9rZW4=' }
   });
-
   // we found it
   assert.strictEqual(result.status, 200);
   body = await result.json();
@@ -48,6 +97,7 @@ const server = `${protocol}://${host}:${port}`;
   // now it get's a bit more tricky. We want to find all cities within 250 km of the
   // the one we found earlier. That might take a while, so rather than waiting for the
   // result we expect to get a url that can be polled for the final result
+
   result = await fetch(`${server}/area?from=${city.guid}&distance=250`, {
     headers: { 'Authorization': 'bearer dGhlc2VjcmV0dG9rZW4=' },
     timeout: 25
@@ -56,7 +106,6 @@ const server = `${protocol}://${host}:${port}`;
   // so far so good
   assert.strictEqual(result.status, 202);
   body = await result.json();
-
   assert.strictEqual(body.resultsUrl, `${server}/area-result/2152f96f-50c7-4d76-9e18-f7033bd14428`);
 
   let status;
